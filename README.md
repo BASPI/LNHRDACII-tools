@@ -8,7 +8,7 @@ This repository contains some useful tools for the Basel Precision Instruments *
 ### Telnet driver `telnet.py`
 This driver implements the communication to the LNHR DAC II using the Telnet protocol. The driver also takes care of all the handshaking, necessary delays to avoid race conditions and raises Errors if the connection failed or a command could not be processed. Full documentation on all available commands can be found in the *Programmers Manual* (see `Further Documentation`).
 
-To use the Telnet driver, connect your LNHR DAC II directly to your computer or network using the device`s Ethernet port. Copy the `telnet.py` into your Python project. Have a look at the examples in `telnet_examples.ipynb` to get a better idea on how to use the driver. 
+To use the Telnet driver, connect your LNHR DAC II directly to your computer or network using the device's Ethernet port. Copy the `telnet.py` into your Python project. Have a look at the examples in `telnet_examples.ipynb` to get a better idea on how to use the driver. 
 
 The Telnet driver can not be used when using the QCoDeS framework. Use the QCoDeS driver instead.
 
