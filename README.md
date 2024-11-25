@@ -12,7 +12,13 @@ To use the Telnet driver, connect your LNHR DAC II directly to your computer or 
 
 The Telnet driver can not be used when using the QCoDeS framework. Use the QCoDeS driver instead.
 
+## Setup
+If you want the latest version of our tools, download the files from the main branch and copy it into your project folder. Older Versions are available under `Releases`.
+
 ## Further Documentation
 See https://www.baspi.ch/manuals for more information.
 
 If you have purchased an LNHR DAC II, you have received an USB stick, which includes the full documentation.
+
+## Contributing
+If you found a bug or are having a serious issue, please use the GitHub issue tracker to report it.
