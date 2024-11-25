@@ -14,4 +14,5 @@ The Telnet driver can not be used when using the QCoDeS framework. Use the QCoDe
 
 ## Further Documentation
 See https://www.baspi.ch/manuals for more information.
- 
+
+If you have purchased an LNHR DAC II, you have received an USB stick, which includes the full documentation.
