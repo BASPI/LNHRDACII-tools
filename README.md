@@ -14,7 +14,7 @@ The Telnet driver can not be used when using the QCoDeS framework. Use the QCoDe
 ### Adaptive 2D-scan example `fast_2D_scan_example.ipynb`
 Using the provided Notebook, a 2D-scan as shown in the video below can be created. The video shows the adaptive 2D-scan in live speed.
 
-
+https://github.com/user-attachments/assets/de2fac24-d2c0-4c25-9fb7-104f3bedb5a8
 
 ## Setup
 If you want the latest version of our tools, download the files from this repository and copy it into your project folder. Older Versions are available under `Releases`.
