@@ -12,7 +12,7 @@ This driver implements the communication to the LNHR DAC II using the Telnet pro
 The Telnet driver can not be used when using the QCoDeS framework. Use the QCoDeS driver instead.
 
 ### Adaptive 2D-scan example `fast_2D_scan_example.ipynb`
-Using the provided Notebook, a 2D-scan as shown in the video below can be created. The video shows the adaptive 2D-scan in live speed.
+The provided Notebook shows an example on how to set up an adaptive fast 2D scan on the LNHR DAC II. Using the provided Notebook as a guide, an adaptive fast 2D-scan, as shown in the video below, can be created. The video shows a 50 (x-axis, red signal) by 1000 (y-axis, green signal) points scan, in the actual live speed. The trigger output for the data aqcuisition can be chosen to trigger every y-axis cycle (as in the video, yellow signal) or every point of the scan.
 
 https://github.com/user-attachments/assets/de2fac24-d2c0-4c25-9fb7-104f3bedb5a8
 
