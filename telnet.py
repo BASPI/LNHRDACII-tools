@@ -144,10 +144,10 @@ class LNHRDAC:
                            + "send_command(), use send_query() instead")
         else: 
             # send telnet command to DAC
-            self.telnet.write(command.encode("ascii") + b"\n") 
+            self.telnet.write(command.encode("ascii") + b"\r\n") 
 
         # read answer, until <LF> or 3s passed
-        ans = self.telnet.read_until(b"\r\n", 3) 
+        ans = self.telnet.read_until(b"\n", 3) 
 
         # in case of a control command, wait 200ms to allow for 
         # internal synchronisation
@@ -165,7 +165,8 @@ class LNHRDAC:
             self._disconnect_from_DAC(hold_connection)
             raise KeyError("Error occured: send_command"
                             + f"(\"{command}\") could not be "
-                            + "processed by LNHR DAC")
+                            + "processed by LNHR DAC, "
+                            + f"DAC answered: {ans}")
 
     #-------------------------------------------------
 
@@ -216,7 +217,8 @@ class LNHRDAC:
         else:
             self._disconnect_from_DAC(hold_connection)
             raise KeyError(f"Error occured: \"{query}\" "
-                 + "could not be processed by LNHR DAC")
+                 + "could not be processed by LNHR DAC,"
+                 + f"DAC answered: {ans}")
    
     #-------------------------------------------------
         
@@ -257,7 +259,7 @@ class LNHRDAC:
             self.telnet.write(query.encode("ascii") + b"\r\n") 
 
         # read answer, until <LF> or 3s passed
-        ans = self.telnet.read_until(b"\n", 3) 
+        ans = self.telnet.read_until(b"\r\n", 3) 
 
         # in case of a control command, wait 200ms to allow for 
         # internal synchronisation
@@ -269,7 +271,8 @@ class LNHRDAC:
         if b"?" in ans:
             self._disconnect_from_DAC(hold_connection)
             raise KeyError(f"Error occured: \"{query}\" "
-                 + "could not be processed by LNHR DAC")
+                 + "could not be processed by LNHR DAC,"
+                 + f"DAC answered: {ans}")
         elif ans.decode("ascii") == answer + "\r\n": 
             self._disconnect_from_DAC(hold_connection)
             return True
@@ -282,13 +285,14 @@ if __name__ == "__main__":
 
     # create DAC object
     DAC = LNHRDAC("192.168.0.5", 23) 
-
+    sleep(1)
     # The following script Tests the main features of this module and 
     # partly their correct funtion
 
     # send command
     # correct use of send_command()
     DAC.send_command("all off") 
+
     # provoke KeyError (wrong method)
     try:
         DAC.send_command("all s?") 
