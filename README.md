@@ -20,7 +20,7 @@ https://github.com/user-attachments/assets/de2fac24-d2c0-4c25-9fb7-104f3bedb5a8
 If you want the latest version of our tools, download the files from this repository and copy it into your project folder. Older Versions are available under `Releases`.
 We generally suggest setting up a virtual environment such as [`pipenv`](https://pypi.org/project/pipenv/), to make sure there are no conflicts inbetween driver versions or different drivers from different authors. 
 
-Executing the following command, while inside your project folder, creates a simple empty virtual environment.
+Executing the following command, while inside your project folder, creates a simple virtual environment.
 ```
 pipenv install
 ```
