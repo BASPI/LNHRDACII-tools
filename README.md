@@ -16,6 +16,8 @@ The provided Notebook shows an example on how to set up an adaptive fast 2D scan
 
 https://github.com/user-attachments/assets/de2fac24-d2c0-4c25-9fb7-104f3bedb5a8
 
+The Notebook includes pictures to help the understanding of the documentation, especially if you are using it as a guide. Make sure to download and copy the `graphics` folder to your project folder to see these pictures locally.
+
 ## Setup
 If you want the latest version of our tools, download the files from this repository and copy it into your project folder. Older Versions are available under `Releases`.
 We generally suggest setting up a virtual environment such as [`pipenv`](https://pypi.org/project/pipenv/), to make sure there are no conflicts inbetween driver versions or different drivers from different authors. 
