@@ -202,7 +202,7 @@ class LNHRDAC:
         # preparation to handle multi line answer
         query = query.strip().lower()
         if query in self._multi_line_output_commands:
-            eom = b"\r\n\r\n"
+            eom = b"\r\r"
         else:
             eom = b"\r\n"
 
@@ -216,13 +216,13 @@ class LNHRDAC:
             sleep(self._ctrl_cmd_delay)
 
         # check for successful acknowledge (handshaking)
-        if b"?" not in ans: 
+        if b"?" not in ans or eom == b"\r\r": 
             self._disconnect_from_DAC(hold_connection)
             return ans.decode("ascii")
         else:
             self._disconnect_from_DAC(hold_connection)
             raise KeyError(f"Error occured: \"{query}\" "
-                 + "could not be processed by LNHR DAC,"
+                 + "could not be processed by LNHR DAC, "
                  + f"DAC answered: {ans}")
   
     #-------------------------------------------------
@@ -263,7 +263,7 @@ class LNHRDAC:
         # preparation to handle multi line answer
         query = query.strip().lower()
         if query in self._multi_line_output_commands:
-            eom = b"\r\n\r\n"
+            eom = b"\r\r"
         else:
             eom = b"\r\n"
         
@@ -278,7 +278,7 @@ class LNHRDAC:
 
         # check for successful acknowledge and expected answer 
         # (handshaking)
-        if b"?" in ans:
+        if b"?" in ans or eom == b"\r\r":
             self._disconnect_from_DAC(hold_connection)
             raise KeyError(f"Error occured: \"{query}\" "
                  + "could not be processed by LNHR DAC,"
@@ -346,14 +346,19 @@ if __name__ == "__main__":
         print(ex)
 
     # test queries with multiline outputs
-    try: 
-        res = DAC.send_query(" Idn?")
-        print(res)
-    except KeyError as ex:
-        print(ex)
-
-    try: 
-        res = DAC.expect_query_answer(" Idn?", " ")
-        print(res)
-    except KeyError as ex:
-        print(ex)
+    print("--------------------------")
+    for element in DAC._multi_line_output_commands:
+        try: 
+            res = DAC.send_query(element)
+            print(res)
+            print("-------------")
+        except KeyError as ex:
+            print(ex)
+    print("--------------------------")
+    for element in DAC._multi_line_output_commands:
+        try: 
+            res = DAC.send_query(element)
+            print(res)
+            print("-------------")
+        except KeyError as ex:
+            print(ex)
