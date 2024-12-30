@@ -59,6 +59,8 @@ class LNHRDAC:
         self._ctrl_cmd_delay = 0.2
         self._mem_wrt_delay = 0.3
 
+        self._multi_line_output_commands = ("?", "help?", "soft?", "hard?", "idn?", "health?", "ip?", "serial?", "contact?")
+
         try:
             self._connect_to_DAC()
             status = self.send_query("all s?")
@@ -142,12 +144,10 @@ class LNHRDAC:
             self._disconnect_from_DAC(hold_connection)
             raise KeyError("Query commands are not allowed with "
                            + "send_command(), use send_query() instead")
-        else: 
-            # send telnet command to DAC
-            self.telnet.write(command.encode("ascii") + b"\r\n") 
-
-        # read answer, until <LF> or 3s passed
-        ans = self.telnet.read_until(b"\n", 3) 
+         
+        # send command and wait for answer
+        self.telnet.write(command.encode("ascii") + b"\r\n") 
+        ans = self.telnet.read_until(b"\r\n", 3) 
 
         # in case of a control command, wait 200ms to allow for 
         # internal synchronisation
@@ -198,12 +198,17 @@ class LNHRDAC:
             self._disconnect_from_DAC(hold_connection)
             raise KeyError("non-query commands are not allowed with "
                            + "send_query(), use send_command() instead")
-        else: 
-            # send telnet command to DAC
-            self.telnet.write(query.encode("ascii") + b"\r\n") 
+        
+        # preparation to handle multi line answer
+        query = query.strip().lower()
+        if query in self._multi_line_output_commands:
+            eom = b"\r\n\r\n"
+        else:
+            eom = b"\r\n"
 
-        # read answer, until <LF> or 3s passed
-        ans = self.telnet.read_until(b"\n", 3) 
+        # send command and wait for answer
+        self.telnet.write(query.encode("ascii") + b"\r\n") 
+        ans = self.telnet.read_until(eom, 3) 
 
         # in case of a control command, wait 200ms to allow for 
         # internal synchronisation
@@ -219,7 +224,7 @@ class LNHRDAC:
             raise KeyError(f"Error occured: \"{query}\" "
                  + "could not be processed by LNHR DAC,"
                  + f"DAC answered: {ans}")
-   
+  
     #-------------------------------------------------
         
     def expect_query_answer(self, 
@@ -254,11 +259,16 @@ class LNHRDAC:
             self._disconnect_from_DAC(hold_connection)
             raise KeyError("non-query commands are not allowed with "
                  +" expect_query_answer(), use send_command() instead")
-        else: 
-            # send telnet command to DAC
-            self.telnet.write(query.encode("ascii") + b"\r\n") 
-
-        # read answer, until <LF> or 3s passed
+        
+        # preparation to handle multi line answer
+        query = query.strip().lower()
+        if query in self._multi_line_output_commands:
+            eom = b"\r\n\r\n"
+        else:
+            eom = b"\r\n"
+        
+        # send command and wait for answer
+        self.telnet.write(query.encode("ascii") + b"\r\n") 
         ans = self.telnet.read_until(b"\r\n", 3) 
 
         # in case of a control command, wait 200ms to allow for 
@@ -291,8 +301,8 @@ if __name__ == "__main__":
 
     # send command
     # correct use of send_command()
-    DAC.send_command("all off") 
-
+    res = DAC.send_command("all off") 
+    print(res)
     # provoke KeyError (wrong method)
     try:
         DAC.send_command("all s?") 
@@ -307,7 +317,8 @@ if __name__ == "__main__":
 
     # send query
     # correct use of send_query()
-    DAC.send_query("all s?") 
+    res = DAC.send_query("all s?") 
+    print(res)
     # provoke KeyError (wrong method)
     try:
         DAC.send_query("all off")
@@ -321,7 +332,8 @@ if __name__ == "__main__":
 
     # expect query answer
     # correct use of expect_query_answer()
-    DAC.expect_query_answer("1 s?", "OFF") 
+    res = DAC.expect_query_answer("1 s?", "OFF") 
+    print(res)
     # provoke KeyError (wrong method)
     try:
         DAC.expect_query_answer("all off", "ON") 
@@ -330,5 +342,18 @@ if __name__ == "__main__":
     # provoke KeyError (invalid command)
     try:
         DAC.expect_query_answer("al s?", "ON") 
+    except KeyError as ex:
+        print(ex)
+
+    # test queries with multiline outputs
+    try: 
+        res = DAC.send_query(" Idn?")
+        print(res)
+    except KeyError as ex:
+        print(ex)
+
+    try: 
+        res = DAC.expect_query_answer(" Idn?", " ")
+        print(res)
     except KeyError as ex:
         print(ex)
