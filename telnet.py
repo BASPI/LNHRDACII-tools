@@ -1,6 +1,6 @@
 # ----------------------------------------------------------------------------------------------------------------------------------------------
 # LNHR DAC II Telnet driver (Python)
-# v0.1.0
+# v0.1.1
 # Copyright (c) Basel Precision Instruments GmbH (2024)
 #
 # This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the 
