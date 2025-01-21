@@ -1,6 +1,6 @@
 # ----------------------------------------------------------------------------------------------------------------------------------------------
 # LNHR DAC II Telnet driver (Python)
-# v0.1.1
+# v0.1.2
 # Copyright (c) Basel Precision Instruments GmbH (2024)
 #
 # This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the 
@@ -14,7 +14,12 @@
 
 from typing import Optional
 from time import sleep
-import telnetlib
+
+from sys import version_info
+if version_info[0] >= 3 and version_info[1] <= 12:
+    from telnetlib import Telnet
+else:
+    from telnetlib_python_12_8 import Telnet
 
 # class ----------------------------------------------------------------
 
@@ -87,7 +92,7 @@ class LNHRDAC:
         # connect to DAC using Telnet
         if not self.connected: 
             try: 
-                self.telnet = telnetlib.Telnet(self.ip, self.port)
+                self.telnet = Telnet(self.ip, self.port)
                 self.telnet.timeout = 3
                 self.connected = True
 
