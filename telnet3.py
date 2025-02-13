@@ -54,27 +54,27 @@ class LNHRDAC:
         self.name = name
         
         self.connected = False
-        self.telnet = None
+        self.reader= None
+        self.writer = None
         self._std_com_delay = 0.003
         self._ctrl_cmd_delay = 0.2
         self._mem_wrt_delay = 0.3
 
         self._multi_line_output_commands = ("?", "help?", "soft?", "hard?", "idn?", "health?", "ip?", "serial?", "contact?")
 
+    @classmethod
+    async def create(cls, ip: str, port: int, name: Optional[str] = None) -> "None":
+
+        instance = cls(ip, port, name)
         try:
-            self._connect_to_DAC()
-            status = self.send_query("all s?")
-            if type(self.name) == type(None):
-                name = ""
-            else:
-                name = f"\"{self.name}\", "
-            print(f"Connected to DAC ({name}{self.ip}) successfully. " 
-                  + "The current status of all channels is shown below " 
-                  + "(channel 1; channel 2; ... ):")
+            await instance._connect_to_DAC()
+            status = await instance.send_query("all s?")
+            display_name = f"\"{name}\"," if name is not None else ""
+            print(f"Connected to device ({display_name}{ip}) successfully. "
+                  "The current status of all channels is shown below (channel 1; channel 2; ... ):")
             print(status)
-            self._disconnect_from_DAC()
         except ConnectionError:
-            print(f"Establishing a connection to {self.ip} failed.")
+            print(f"Establishing a connection to {ip} failed.")
 
     #-------------------------------------------------
 
@@ -141,7 +141,7 @@ class LNHRDAC:
                            + "send_command(), use send_query instead")
 
         #send command and wait for answer
-        self.writer.write(command + "\r\n", 3)
+        await self.writer.write(command + "\r\n", 3)
         response = await self.reader.readuntil("\r\n", 3)
 
         # in case of a control command, wait 200ms to allow for 
