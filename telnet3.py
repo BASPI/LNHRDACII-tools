@@ -78,15 +78,22 @@ class LNHRDAC:
 
         try:
             if self.writer:
-                self.writer.close()
-                await self.writer.wait_closed()
+                self.writer.close()  # Close the writer
+
+                # Check if `wait_closed()` exists before calling it
+                if hasattr(self.writer, "wait_closed"):
+                    await self.writer.wait_closed()
+
                 print(f"[{self.name}] Disconnected from {self.ip}:{self.port}")
+
         except Exception as e:
             print(f"[{self.name}] Error while disconnecting: {e}")
+
         finally:
             self.connected = False
             self.reader = None
-            self.writer = None
+            self.writer = None  # Ensure cleanup
+
 
 #end-disconnect------------------------------------------------------------------    
 #send_command------------------------------------------------------------------    
@@ -108,35 +115,54 @@ class LNHRDAC:
                 raise ConnectionError(f"[{self.name}] Failed to connect to {self.ip}")
         print("i am here 3")
         # Send command
-        self.writer.write(command + "\n")
+        self.writer.write(command + "\r\n")
         await self.writer.drain()
         print("i am here 4")
         # Read response
+
+
         try:
-        # 🔹 Read a fixed size instead of waiting for "\r\n"
             print("i am here lolol")
-            ans = await asyncio.wait_for(self.reader.read(1024), timeout=5)
-            print(f"[{self.name}] Device response: {ans.strip()}")
-        except asyncio.TimeoutError:
-            print(f"[{self.name}] Device did not respond in time. Retrying...")
-      
-
-
+            print(f"[{self.name}] Before sending command")
+    
+            # Ensure the writer exists
+            if not hasattr(self, 'writer') or self.writer is None:
+                print(f"[{self.name}] Error: self.writer is None")
+                return
+    
+            # Check if command is None
+            if command is None:
+                print(f"[{self.name}] Error: Command is None!")
+                return
+            
+            # Ensure the command is a proper string
+            if not isinstance(command, str):
+                print(f"[{self.name}] Error: Command is not a string! Type: {type(command)}")
+                return
+    
+            # Ensure the command ends with CRLF (\r\n)
+            if not command.endswith("\r\n"):
+                command += "\r\n"
+    
+            # Send the command as a string
+            self.writer.write(command)  # Directly send the string with CRLF
+            await self.writer.drain()  # Ensure it's sent
+            print(f"[{self.name}] Sent command: {command.strip()} (with CRLF)")
+    
+            print(f"[{self.name}] Waiting for device response...")
+    
+            # Wait for response (if any), but handle timeout
+            try:
+                response = await asyncio.wait_for(self.reader.read(1024), timeout=5)
+                print(f"[{self.name}] Device response: {response.strip()}")
+            except asyncio.TimeoutError:
+                print(f"[{self.name}] No response from device (which might be expected).")
+    
+        except Exception as e:
+            print(f"[{self.name}] Unexpected error: {e}")
+    
         print("i am here 5")
-        # Handle delays for specific commands
-        if command[0].lower() in ("c", "C"):  
-            await asyncio.sleep(self._ctrl_cmd_delay)
 
-            if "write" in command.lower():
-                await asyncio.sleep(self._mem_wrt_delay)
-
-        if ans.strip() == "0":
-            await self.disconnect(hold_connection)
-            return True
-        else:
-            await self.disconnect(hold_connection)
-            raise KeyError(f"Error: send_command(\"{command}\") failed. "
-                           f"Device response: {ans.strip()}")
         
 #end-send_command------------------------------------------------------------------
 #send_query------------------------------------------------------------------------    
@@ -161,7 +187,7 @@ class LNHRDAC:
         query = query.strip().lower()
         eom = b"\r\r" if query in self._multi_line_output_commands else b"\r\n"
 
-        self.writer.write(query + "\n")
+        self.writer.write(query + "\r\n")
         await self.writer.drain()
 
         ans = await self.reader.readuntil(eom)
