@@ -158,7 +158,6 @@ class LNHRDAC:
     
         except Exception as e:
             print(f"[{self.name}] Unexpected error: {e}")
-  
 
         
 #end-send_command------------------------------------------------------------------
@@ -228,7 +227,7 @@ class LNHRDAC:
         self.writer.write(query + "\n")
         await self.writer.drain()
 
-        ans = await self.reader.readuntil(b"\r\n")
+        ans = await self.reader.readuntil("\r\n")
 
         if query[0].lower() in ("c", "m", "x"):
             await asyncio.sleep(self._ctrl_cmd_delay)
