@@ -56,10 +56,10 @@ class LNHRDAC:
         
         try:
             self.reader, self.writer = await telnetlib3.open_connection(self.ip, self.port)
-            print("i am here 1")
+ 
             self.connected = True
             print(f"[{self.name}] Connected to {self.ip}:{self.port}")
-            print("i am here 2")
+
             return True
         
         except Exception as e:
@@ -68,6 +68,7 @@ class LNHRDAC:
             return False
         
 #end-connect------------------------------------------------------------------    
+
 #disconnect------------------------------------------------------------------    
     async def disconnect(self, hold_connection: bool = False) -> None:
         """
@@ -95,7 +96,8 @@ class LNHRDAC:
             self.writer = None  # Ensure cleanup
 
 
-#end-disconnect------------------------------------------------------------------    
+#end-disconnect------------------------------------------------------------------  
+
 #send_command------------------------------------------------------------------    
     async def send_command(self, 
                        command: str, 
@@ -113,16 +115,12 @@ class LNHRDAC:
             success = await self.connect()
             if not success:
                 raise ConnectionError(f"[{self.name}] Failed to connect to {self.ip}")
-        print("i am here 3")
+
         # Send command
         self.writer.write(command + "\r\n")
         await self.writer.drain()
-        print("i am here 4")
-        # Read response
-
 
         try:
-            print("i am here lolol")
             print(f"[{self.name}] Before sending command")
     
             # Ensure the writer exists
@@ -160,11 +158,11 @@ class LNHRDAC:
     
         except Exception as e:
             print(f"[{self.name}] Unexpected error: {e}")
-    
-        print("i am here 5")
+  
 
         
 #end-send_command------------------------------------------------------------------
+
 #send_query------------------------------------------------------------------------    
     async def send_query(self, 
                              query: str, 
@@ -204,6 +202,7 @@ class LNHRDAC:
             raise KeyError(f"Error: \"{query}\" failed. "
                            f"Device response: {ans.strip()}")
 #end send_query--------------------------------------------------------------------------------------------------
+
 #expect_query_answer-----------------------------------------------------------------------------------------
 
     async def expect_query_answer(self, 
@@ -229,7 +228,7 @@ class LNHRDAC:
         self.writer.write(query + "\n")
         await self.writer.drain()
 
-        ans = await self.reader.readuntil("\r\n")
+        ans = await self.reader.readuntil(b"\r\n")
 
         if query[0].lower() in ("c", "m", "x"):
             await asyncio.sleep(self._ctrl_cmd_delay)
