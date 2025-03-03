@@ -20,7 +20,7 @@ from typing import Optional
 # class ----------------------------------------------------------------
 
 class LNHRDAC:
-#init------------------------------------------------------------------    
+    #init------------------------------------------------------------------    
     def __init__(self, 
                      ip: str, 
                      port: int, 
@@ -43,9 +43,9 @@ class LNHRDAC:
             self._multi_line_output_commands = ("?", "help?", "soft?", "hard?", "idn?", 
                                                 "health?", "ip?", "serial?", "contact?")
 
-#end-init------------------------------------------------------------------    
+    #end-init------------------------------------------------------------------    
 
-#connect------------------------------------------------------------------    
+    #connect------------------------------------------------------------------    
     async def connect(self) -> None:
         """
         Establishes a Telnet connection to the device.
@@ -67,9 +67,9 @@ class LNHRDAC:
             self.connected = False
             return False
         
-#end-connect------------------------------------------------------------------    
+    #end-connect------------------------------------------------------------------    
 
-#disconnect------------------------------------------------------------------    
+    #disconnect------------------------------------------------------------------    
     async def disconnect(self, hold_connection: bool = False) -> None:
         """
         Closes the Telnet connection if `hold_connection` is False.
@@ -96,9 +96,9 @@ class LNHRDAC:
             self.writer = None  # Ensure cleanup
 
 
-#end-disconnect------------------------------------------------------------------  
+    #end-disconnect------------------------------------------------------------------  
 
-#send_command------------------------------------------------------------------    
+    #send_command------------------------------------------------------------------    
     async def send_command(self, 
                        command: str, 
                        hold_connection: bool = False
@@ -145,7 +145,7 @@ class LNHRDAC:
             if command[0].lower() == "c":  # Control command
                 print(f"[{self.name}] Control command detected, waiting {self._ctrl_cmd_delay} seconds")
                 await asyncio.sleep(self._ctrl_cmd_delay)  # Wait for internal synchronization
-                await self.writer.drain()
+                await self.writer.drain()                                                    
 
                 if "write" in command.lower():  # Memory write command
                     print(f"[{self.name}] Memory write command detected, waiting additional {self._mem_wrt_delay} seconds")
@@ -157,7 +157,7 @@ class LNHRDAC:
                 self.writer.write(command)  # Directly send the string with CRLF
                 await self.writer.drain()  # Ensure it's sent
                 print(f"[{self.name}] Sent command: {command.strip()} (with CRLF)")
-    
+
             print(f"[{self.name}] Waiting for device response...")
     
             # Wait for response (if any), but handle timeout
@@ -171,9 +171,9 @@ class LNHRDAC:
             print(f"[{self.name}] Unexpected error: {e}")
 
         
-#end-send_command------------------------------------------------------------------
+    #end-send_command------------------------------------------------------------------
 
-#send_query------------------------------------------------------------------------    
+    #send_query------------------------------------------------------------------------    
     async def send_query(self, 
                              query: str, 
                              hold_connection: bool = False
@@ -211,9 +211,9 @@ class LNHRDAC:
             await self.disconnect(hold_connection)
             raise KeyError(f"Error: \"{query}\" failed. "
                            f"Device response: {ans.strip()}")
-#end send_query--------------------------------------------------------------------------------------------------
+    #end send_query--------------------------------------------------------------------------------------------------
 
-#expect_query_answer-----------------------------------------------------------------------------------------
+    #expect_query_answer-----------------------------------------------------------------------------------------
 
     async def expect_query_answer(self, 
                                   query: str, 
@@ -254,7 +254,7 @@ class LNHRDAC:
         else:
             return False
     
-#end expect_query-anwser------------------------------------------------------------------    
+    #end expect_query-anwser------------------------------------------------------------------    
 
 
 
