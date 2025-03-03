@@ -141,11 +141,22 @@ class LNHRDAC:
             # Ensure the command ends with CRLF (\r\n)
             if not command.endswith("\r\n"):
                 command += "\r\n"
-    
+            
+            if command[0].lower() == "c":  # Control command
+                print(f"[{self.name}] Control command detected, waiting {self._ctrl_cmd_delay} seconds")
+                await asyncio.sleep(self._ctrl_cmd_delay)  # Wait for internal synchronization
+                await self.writer.drain()
+
+                if "write" in command.lower():  # Memory write command
+                    print(f"[{self.name}] Memory write command detected, waiting additional {self._mem_wrt_delay} seconds")
+                    await asyncio.sleep(self._mem_wrt_delay)
+                    await self.writer.drain()
+
             # Send the command as a string
-            self.writer.write(command)  # Directly send the string with CRLF
-            await self.writer.drain()  # Ensure it's sent
-            print(f"[{self.name}] Sent command: {command.strip()} (with CRLF)")
+            if command[0].lower() != "c":  # Control command
+                self.writer.write(command)  # Directly send the string with CRLF
+                await self.writer.drain()  # Ensure it's sent
+                print(f"[{self.name}] Sent command: {command.strip()} (with CRLF)")
     
             print(f"[{self.name}] Waiting for device response...")
     
