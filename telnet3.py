@@ -190,7 +190,7 @@ class LNHRDAC:
         ans = await self.reader.readuntil(eom)
 
         # Handle delays
-        if query[0].lower() in ("c", "m", "x"):
+        if query and query[0].lower() == "c":
             await asyncio.sleep(self._ctrl_cmd_delay)
 
         if b"?" not in ans or eom == b"\r\r":
@@ -224,12 +224,12 @@ class LNHRDAC:
         query = query.strip().lower()
         eom = b"\r\r" if query in self._multi_line_output_commands else b"\r\n"
 
-        self.writer.write(query + "\n")
+        self.writer.write(query + "\r\n")
         await self.writer.drain()
 
-        ans = await self.reader.readuntil("\r\n")
+        ans = await self.reader.readuntil(b"\r\n")
 
-        if query[0].lower() in ("c", "m", "x"):
+        if query and query[0].lower() == "c":
             await asyncio.sleep(self._ctrl_cmd_delay)
 
         if b"?" in ans or eom == b"\r\r":
