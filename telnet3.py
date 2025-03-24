@@ -174,43 +174,73 @@ class LNHRDAC:
     #end-send_command------------------------------------------------------------------
 
     #send_query------------------------------------------------------------------------    
-    async def send_query(self, 
-                             query: str, 
-                             hold_connection: bool = False
-                             ) -> str:
-        """
-        Sends a query command and returns the response.
-        Raises KeyError if the command is invalid.
-        """
-        if "?" not in query:
-            raise KeyError("Non-query commands are not allowed with send_query(), "
-                           "use send_command() instead.")
 
+    async def send_query(self, query: str, hold_connection: bool = False) -> str:
+        if not isinstance(query, str):
+            raise TypeError(f"Query must be a string, got {type(query).__name__}")
+    
+        query = query.strip().upper()
+    
+        # Check if it's a Device-Channel voltage query (e.g., "1 V?")
+        import re
+        channel_query_match = re.match(r"^(\d{1,2})\sV\?$", query)
+    
+        # Removed allowed_queries check so that any query is sent:
+        # allowed_queries = {'?', 'HELP?', 'SOFT?', 'HARD?', 'IDN?', 'HEALTH?', 'IP?', 'SERIAL?', 'CONTACT?'}
+        # if query not in allowed_queries and not channel_query_match:
+        #     raise ValueError(f"Query '{query}' is not supported. Allowed queries: {allowed_queries} or '<channel> V?'")
+    
         if not self.connected:
             success = await self.connect()
             if not success:
                 raise ConnectionError(f"[{self.name}] Failed to connect to {self.ip}")
-
-        # Determine end of message for multi-line outputs
-        query = query.strip().lower()
-        eom = b"\r\r" if query in self._multi_line_output_commands else b"\r\n"
-
-        self.writer.write(query + "\r\n")
+    
+        # Append CR+LF as specified by the device documentation
+        query += '\r\n'
+    
+        self.writer.write(query)
         await self.writer.drain()
+    
+        response_lines = []
+        try:
+            # Continuously read lines until no new data arrives within the timeout period.
+            while True:
+                # Adjust the timeout (here, 0.2 sec) as needed based on the device's behavior.
+                line = await asyncio.wait_for(self.reader.readline(), timeout=0.2)
+                if not line:
+                    break
+                # Check if the line is bytes; if so, decode it.
+                if isinstance(line, bytes):
+                    response_lines.append(line.decode("ascii", errors="replace"))
+                else:
+                    response_lines.append(line)
+        except asyncio.TimeoutError:
+            # Assume the response is complete when no new line is received within the timeout.
+            pass
+        
+        # Join the lines without stripping to preserve all \r\n sequences.
+        response_str = "".join(response_lines)
+    
+        # Special handling for device channel queries to parse HEX values
+        if channel_query_match:
+            hex_value = response_str.strip()  # Remove any extra whitespace/newlines.
+            try:
+                decimal_value = int(hex_value, 16)
+                response_str = f"Channel {channel_query_match.group(1)} Value: 0x{hex_value} ({decimal_value})"
+            except ValueError:
+                response_str = f"Invalid HEX response: {hex_value}"
+    
+        print(f"[{self.name}] {query.strip()} → {response_str}")
+    
+        await self.disconnect(hold_connection)
+    
+        return response_str
 
-        ans = await self.reader.readuntil(eom)
 
-        # Handle delays
-        if query and query[0].lower() == "c":
-            await asyncio.sleep(self._ctrl_cmd_delay)
 
-        if b"?" not in ans or eom == b"\r\r":
-            await self.disconnect(hold_connection)
-            return ans.decode("ascii").strip()
-        else:
-            await self.disconnect(hold_connection)
-            raise KeyError(f"Error: \"{query}\" failed. "
-                           f"Device response: {ans.strip()}")
+
+
+
     #end send_query--------------------------------------------------------------------------------------------------
 
     #expect_query_answer-----------------------------------------------------------------------------------------
